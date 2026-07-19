@@ -1,4 +1,4 @@
-# 一键部署到 GitHub Pages（需先 gh auth login）
+﻿# 一键部署到 GitHub Pages（需先 gh auth login）
 # 用法: powershell -ExecutionPolicy Bypass -File tools\deploy.ps1 [-RepoName heritage-alive-ar]
 param([string]$RepoName = "heritage-alive-ar")
 
