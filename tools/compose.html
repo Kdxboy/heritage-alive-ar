@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { width: 1024px; height: 1536px; overflow: hidden; }
+  .poster { position: relative; width: 1024px; height: 1536px; background: #111; font-family: 'Microsoft YaHei', sans-serif; }
+  .raw { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+
+  /* 顶部渐隐压暗层，保证标题可读 */
+  .scrim-top { position: absolute; left: 0; top: 0; width: 100%; height: 300px;
+    background: linear-gradient(180deg, var(--scrim) 0%, transparent 100%); }
+  .scrim-bottom { position: absolute; left: 0; bottom: 0; width: 100%; height: 400px;
+    background: linear-gradient(0deg, var(--scrim) 0%, var(--scrim65) 55%, transparent 100%); }
+
+  /* 细边框（双线 + 角标） */
+  .frame { position: absolute; inset: 22px; border: 2px solid rgba(245,238,220,.75); pointer-events: none; }
+  .frame::after { content: ''; position: absolute; inset: 6px; border: 1px solid rgba(245,238,220,.4); }
+  .corner { position: absolute; width: 34px; height: 34px; border-color: var(--theme); border-style: solid; }
+  .c1 { left: 14px; top: 14px; border-width: 4px 0 0 4px; }
+  .c2 { right: 14px; top: 14px; border-width: 4px 4px 0 0; }
+  .c3 { left: 14px; bottom: 14px; border-width: 0 0 4px 4px; }
+  .c4 { right: 14px; bottom: 14px; border-width: 0 4px 4px 0; }
+
+  /* 顶部标题区 */
+  .header { position: absolute; left: 56px; right: 56px; top: 52px; display: flex; justify-content: space-between; align-items: flex-start; }
+  .title-zh { font-family: 'KaiTi', 'STKaiti', serif; font-size: 92px; font-weight: bold; color: #f5eedc;
+    letter-spacing: 10px; text-shadow: 0 2px 14px rgba(0,0,0,.65); line-height: 1; }
+  .title-zh em { font-style: normal; color: var(--themeBright); }
+  .title-sub { margin-top: 14px; font-size: 21px; color: #e8dfc8; letter-spacing: 5px; text-shadow: 0 1px 8px rgba(0,0,0,.8); }
+  .title-en { margin-top: 7px; font-size: 14px; color: rgba(232,223,200,.75); letter-spacing: 7px; }
+  .seals { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+  .seal-num { width: 84px; height: 84px; background: var(--theme); color: #f8f3e6; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center; font-family: 'KaiTi', serif;
+    font-size: 56px; font-weight: bold; box-shadow: 0 3px 12px rgba(0,0,0,.5), inset 0 0 0 3px rgba(248,243,230,.35); }
+  .seal-ar { padding: 4px 14px; background: rgba(12,18,30,.72); border: 1.5px solid rgba(245,238,220,.8);
+    border-radius: 999px; color: #f5eedc; font-size: 18px; letter-spacing: 3px; font-weight: bold; }
+
+  /* 底部信息区 */
+  .footer { position: absolute; left: 56px; right: 56px; bottom: 46px; color: #f5eedc; }
+  .f-row1 { display: flex; align-items: flex-end; justify-content: space-between; }
+  .name-zh { font-family: 'KaiTi', 'STKaiti', serif; font-size: 76px; font-weight: bold; letter-spacing: 8px;
+    text-shadow: 0 2px 12px rgba(0,0,0,.7); line-height: 1.05; }
+  .name-bar { display: inline-block; width: 12px; height: 58px; background: var(--theme); margin-right: 18px;
+    vertical-align: baseline; border-radius: 2px; }
+  .name-en { font-size: 15px; letter-spacing: 4px; color: rgba(232,223,200,.8); margin-top: 10px; }
+  .heritage-tag { font-size: 17px; padding: 6px 14px; border: 1.5px solid rgba(245,238,220,.7); border-radius: 6px;
+    letter-spacing: 3px; color: #f0e8d2; background: rgba(12,18,30,.45); white-space: nowrap; }
+  .slogan { margin-top: 16px; font-family: 'KaiTi', serif; font-size: 27px; letter-spacing: 4px; color: #efe6cd;
+    text-shadow: 0 1px 8px rgba(0,0,0,.8); }
+  .divider { margin: 20px 0 16px; height: 1.5px; background: linear-gradient(90deg, var(--themeBright), rgba(245,238,220,.35) 60%, transparent); }
+  .f-row2 { display: flex; align-items: center; justify-content: space-between; }
+  .cta { display: flex; align-items: center; gap: 14px; }
+  .scan-ic { width: 46px; height: 46px; position: relative; flex: none; }
+  .scan-ic i { position: absolute; width: 15px; height: 15px; border-color: var(--themeBright); border-style: solid; }
+  .scan-ic i:nth-child(1) { left: 0; top: 0; border-width: 3.5px 0 0 3.5px; }
+  .scan-ic i:nth-child(2) { right: 0; top: 0; border-width: 3.5px 3.5px 0 0; }
+  .scan-ic i:nth-child(3) { left: 0; bottom: 0; border-width: 0 0 3.5px 3.5px; }
+  .scan-ic i:nth-child(4) { right: 0; bottom: 0; border-width: 0 3.5px 3.5px 0; }
+  .scan-ic b { position: absolute; left: 7px; right: 7px; top: 21px; height: 3.5px; background: var(--themeBright); }
+  .cta-t1 { font-size: 24px; font-weight: bold; letter-spacing: 3px; }
+  .cta-t2 { font-size: 15px; color: rgba(232,223,200,.85); letter-spacing: 2px; margin-top: 4px; }
+  .series { text-align: right; }
+  .series-chars { font-family: 'KaiTi', serif; font-size: 25px; letter-spacing: 10px; color: rgba(232,223,200,.55); }
+  .series-chars b { color: var(--themeBright); font-size: 30px; }
+  .brand { margin-top: 8px; display: flex; align-items: center; justify-content: flex-end; gap: 8px; }
+  .brand-seal { width: 30px; height: 30px; background: #c2452f; color: #fff; border-radius: 5px; display: flex;
+    align-items: center; justify-content: center; font-family: 'KaiTi', serif; font-size: 15px; font-weight: bold; line-height: 1; }
+  .brand-txt { font-size: 15px; letter-spacing: 2px; color: rgba(232,223,200,.9); }
+</style>
+</head>
+<body>
+<div class="poster" id="poster">
+  <img class="raw" id="raw" alt="">
+  <div class="scrim-top"></div>
+  <div class="scrim-bottom"></div>
+  <div class="frame"></div>
+  <i class="corner c1"></i><i class="corner c2"></i><i class="corner c3"></i><i class="corner c4"></i>
+
+  <div class="header">
+    <div>
+      <div class="title-zh">非遗<em>活</em>了</div>
+      <div class="title-sub">活路儿 · 地方非遗 AR 系列互动海报</div>
+      <div class="title-en">HERITAGE, ALIVE! — AR POSTER SERIES</div>
+    </div>
+    <div class="seals">
+      <div class="seal-num" id="sealNum"></div>
+      <div class="seal-ar">AR 互动</div>
+    </div>
+  </div>
+
+  <div class="footer">
+    <div class="f-row1">
+      <div>
+        <div class="name-zh"><span class="name-bar"></span><span id="nameZh"></span></div>
+        <div class="name-en" id="nameEn"></div>
+      </div>
+      <div class="heritage-tag" id="tag"></div>
+    </div>
+    <div class="slogan" id="slogan"></div>
+    <div class="divider"></div>
+    <div class="f-row2">
+      <div class="cta">
+        <div class="scan-ic"><i></i><i></i><i></i><i></i><b></b></div>
+        <div>
+          <div class="cta-t1">扫码开相机 · 对准海报 · 非遗活过来</div>
+          <div class="cta-t2">无需下载 APP · 手机浏览器直接体验 · 集齐四艺解锁彩蛋</div>
+        </div>
+      </div>
+      <div class="series">
+        <div class="series-chars" id="seriesChars"></div>
+        <div class="brand"><div class="brand-seal">活</div><div class="brand-txt">活路儿 · 非遗智库出品</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const DATA = {
+  dragon: {
+    num: '壹', name: '铜梁龙舞', en: 'TONGLIANG DRAGON DANCE · CHONGQING',
+    tag: '国家级非物质文化遗产', slogan: '竹骨为脊，火树银花——舞出巴渝气魄',
+    theme: '#c2452f', themeBright: '#f0a05a', scrim: 'rgba(8,14,26,.92)', scrim65: 'rgba(8,14,26,.6)', cur: 0,
+  },
+  print: {
+    num: '贰', name: '梁平木版年画', en: 'LIANGPING WOODBLOCK PRINTS · CHONGQING',
+    tag: '国家级非物质文化遗产', slogan: '一画五版，套色千张——刻在木上的年味',
+    theme: '#a8690e', themeBright: '#f2c14e', scrim: 'rgba(43,28,8,.92)', scrim65: 'rgba(43,28,8,.6)', cur: 1,
+  },
+  embroidery: {
+    num: '叁', name: '蜀　绣', en: 'SHU EMBROIDERY · SICHUAN & CHONGQING',
+    tag: '国家级非物质文化遗产', slogan: '一针一线，双面生花——绣出蜀中风雅',
+    theme: '#2e6b4f', themeBright: '#8fd0ae', scrim: 'rgba(7,26,19,.92)', scrim65: 'rgba(7,26,19,.6)', cur: 2,
+  },
+  pottery: {
+    num: '肆', name: '荣昌陶器', en: 'RONGCHANG POTTERY · CHONGQING',
+    tag: '国家级非物质文化遗产', slogan: '泥与火的窑变——一抔红泥，化作千年器',
+    theme: '#b0552a', themeBright: '#f2a25c', scrim: 'rgba(26,12,5,.92)', scrim65: 'rgba(26,12,5,.6)', cur: 3,
+  },
+};
+const id = new URLSearchParams(location.search).get('id') || 'dragon';
+const d = DATA[id];
+const P = document.getElementById('poster');
+P.style.setProperty('--theme', d.theme);
+P.style.setProperty('--themeBright', d.themeBright);
+P.style.setProperty('--scrim', d.scrim);
+P.style.setProperty('--scrim65', d.scrim65);
+document.getElementById('raw').src = '../posters/raw/' + id + '.png';
+document.getElementById('sealNum').textContent = d.num;
+document.getElementById('nameZh').textContent = d.name;
+document.getElementById('nameEn').textContent = d.en;
+document.getElementById('tag').textContent = d.tag;
+document.getElementById('slogan').textContent = d.slogan;
+document.getElementById('seriesChars').innerHTML =
+  ['龙', '画', '绣', '陶'].map((c, i) => i === d.cur ? `<b>${c}</b>` : c).join('') +
+  `<span style="font-size:17px;letter-spacing:2px;"> 系列 ${d.cur + 1}/4</span>`;
+</script>
+</body>
+</html>

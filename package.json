@@ -1,0 +1,13 @@
+{
+  "name": "heritage-alive-ar",
+  "version": "1.0.0",
+  "private": true,
+  "description": "《非遗活了》活路儿 AR 系列互动海报 — WebAR 非遗数字文创作品",
+  "type": "module",
+  "dependencies": {
+    "esbuild": "^0.24.2",
+    "mind-ar": "^1.2.5",
+    "qrcode": "^1.5.4",
+    "three": "^0.160.1"
+  }
+}

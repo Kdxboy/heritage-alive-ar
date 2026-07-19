@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8"><title>mind compiler</title></head>
+<body>
+<script type="module">
+const log = (m) => fetch('/__log', { method: 'POST', body: String(m) }).catch(() => {});
+window.addEventListener('error', (e) => log('ERROR ' + e.message + ' @' + e.filename + ':' + e.lineno));
+window.addEventListener('unhandledrejection', (e) => log('REJECT ' + (e.reason && e.reason.stack || e.reason)));
+
+try {
+  await import('/node_modules/mind-ar/dist/mindar-image.prod.js');
+  const { Compiler } = window.MINDAR.IMAGE;
+  const ids = ['dragon', 'print', 'embroidery', 'pottery'];
+
+  // 下采样到高 1024，加速编译且不影响追踪坐标系
+  async function loadScaled(id) {
+    const img = new Image();
+    img.src = '/site/posters/' + id + '.png';
+    await img.decode();
+    const scale = Math.min(1, 1024 / img.height);
+    const c = document.createElement('canvas');
+    c.width = Math.round(img.width * scale);
+    c.height = Math.round(img.height * scale);
+    c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+    const out = new Image();
+    out.src = c.toDataURL('image/png');
+    await out.decode();
+    log(`loaded ${id} ${out.width}x${out.height}`);
+    return out;
+  }
+
+  const images = [];
+  for (const id of ids) images.push(await loadScaled(id));
+
+  const compiler = new Compiler();
+  let lastP = -10;
+  const t0 = performance.now();
+  await compiler.compileImageTargets(images, (p) => {
+    if (p - lastP >= 5) { lastP = p; log(`progress ${p.toFixed(1)}%`); }
+  });
+  log(`compiled in ${((performance.now() - t0) / 1000).toFixed(1)}s`);
+  const buffer = await compiler.exportData();
+  await fetch('/__save?path=' + encodeURIComponent('site/targets/targets.mind'), { method: 'POST', body: buffer });
+  log('SAVED');
+  document.title = 'DONE';
+} catch (e) {
+  log('FATAL ' + (e && e.stack || e));
+}
+</script>
+</body>
+</html>
