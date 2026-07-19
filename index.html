@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#0d1a30">
+<title>非遗活了 · 活路儿地方非遗 AR 系列互动海报</title>
+<meta name="description" content="扫描《非遗活了》系列海报，铜梁龙舞、梁平木版年画、蜀绣、荣昌陶器当场活过来——活路儿地方非遗生成式AI数字文创作品，浏览器直接体验，无需下载APP。">
+<style>
+  :root {
+    --indigo: #0d1a30; --indigo2: #16294a; --cinnabar: #c2452f; --gold: #e8b34b;
+    --ivory: #f5eedc; --ivory2: #cfc7ae;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { height: 100%; }
+  body { font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif; background: var(--indigo); color: var(--ivory); overflow-x: hidden; max-width: 100vw; }
+  #landing { overflow-x: hidden; }
+  body.ar-on { overflow: hidden; }
+  .kai { font-family: 'Kaiti SC', 'STKaiti', 'KaiTi', serif; }
+
+  /* ---------- 落地页 ---------- */
+  #landing { min-height: 100%; padding: max(24px, env(safe-area-inset-top)) 22px 40px;
+    background: radial-gradient(120% 60% at 50% -5%, var(--indigo2), var(--indigo) 70%); position: relative; z-index: 5; }
+  #landing.hide { display: none; }
+  .hero { text-align: center; padding-top: 26px; }
+  .hero-tag { display: inline-block; border: 1px solid rgba(245,238,220,.5); border-radius: 999px;
+    padding: 4px 16px; font-size: 12px; letter-spacing: 3px; color: var(--ivory2); }
+  h1 { font-size: 56px; letter-spacing: 8px; margin: 18px 0 6px; }
+  h1 em { font-style: normal; color: var(--gold); }
+  .hero-sub { font-size: 14px; letter-spacing: 4px; color: var(--ivory2); }
+  .hero-en { font-size: 10px; letter-spacing: 4px; color: rgba(207,199,174,.55); margin-top: 6px; }
+
+  .gallery { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; max-width: 560px; margin: 30px auto 0; }
+  .g-card { position: relative; border-radius: 10px; overflow: hidden; border: 1.5px solid rgba(245,238,220,.22);
+    cursor: pointer; transition: transform .2s; background: #000; }
+  .g-card:active { transform: scale(.96); }
+  .g-card img { width: 100%; display: block; aspect-ratio: 2/3; object-fit: cover; }
+  .g-name { position: absolute; left: 0; right: 0; bottom: 0; font-size: 11px; text-align: center;
+    padding: 14px 0 5px; background: linear-gradient(transparent, rgba(0,0,0,.85)); letter-spacing: 1px; }
+  .g-card::after { content: ''; position: absolute; inset: 0; border-radius: 9px; box-shadow: inset 0 0 0 2px var(--c); opacity: .0; }
+
+  .cta-wrap { max-width: 420px; margin: 26px auto 0; text-align: center; }
+  #btn-start { width: 100%; padding: 17px; font-size: 19px; letter-spacing: 6px; color: #fff;
+    background: linear-gradient(135deg, var(--cinnabar), #a3311f); border: none; border-radius: 14px;
+    font-weight: bold; cursor: pointer; box-shadow: 0 6px 24px rgba(194,69,47,.45); font-family: inherit; }
+  #btn-start:disabled { opacity: .6; }
+  .cta-note { font-size: 12px; color: var(--ivory2); margin-top: 10px; letter-spacing: 1px; }
+  #landing-progress { margin-top: 18px; font-size: 13px; color: var(--gold); letter-spacing: 2px; }
+  .sec-btns { display: flex; gap: 10px; justify-content: center; margin-top: 16px; flex-wrap: wrap; }
+  .btn-ghost { padding: 10px 18px; border: 1px solid rgba(245,238,220,.45); background: transparent; color: var(--ivory);
+    border-radius: 999px; font-size: 14px; letter-spacing: 2px; cursor: pointer; font-family: inherit; }
+  .preview-row { max-width: 420px; margin: 26px auto 0; text-align: center; }
+  .preview-row p { font-size: 12px; color: var(--ivory2); margin-bottom: 10px; letter-spacing: 1px; }
+  #preview-links { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+  .chip { padding: 7px 16px; border-radius: 999px; font-size: 13px; letter-spacing: 2px; color: var(--ivory);
+    text-decoration: none; border: 1px solid var(--c); background: color-mix(in srgb, var(--c) 22%, transparent); }
+  #wx-tip { display: none; max-width: 420px; margin: 18px auto 0; font-size: 12.5px; line-height: 1.7; color: #ffd9a0;
+    background: rgba(232,179,75,.12); border: 1px solid rgba(232,179,75,.4); border-radius: 10px; padding: 10px 14px; }
+  .landing-foot { margin-top: 44px; text-align: center; font-size: 11px; color: rgba(207,199,174,.5);
+    line-height: 1.9; letter-spacing: 1px; }
+
+  /* ---------- AR 容器 ---------- */
+  #ar-container { position: fixed; inset: 0; z-index: 1; }
+  #ar-container video { object-fit: cover; }
+  #ar-container.preview-bg { background: radial-gradient(120% 80% at 50% 0%, #24406e, var(--indigo) 75%); }
+
+  /* ---------- HUD ---------- */
+  #hud { display: none; }
+  #hud.show { display: block; }
+  .ui { pointer-events: auto; }
+  #topbar { position: fixed; top: 0; left: 0; right: 0; z-index: 20; display: flex; align-items: center;
+    justify-content: space-between; padding: calc(10px + env(safe-area-inset-top)) 14px 10px;
+    background: linear-gradient(rgba(10,16,28,.75), transparent); }
+  #btn-exit { border: 1px solid rgba(245,238,220,.5); background: rgba(10,16,28,.45); color: var(--ivory);
+    border-radius: 999px; padding: 7px 16px; font-size: 13px; letter-spacing: 2px; cursor: pointer; font-family: inherit; }
+  #topbar .t { font-size: 15px; letter-spacing: 3px; }
+  #progress { display: flex; gap: 6px; }
+  .p-dot { width: 30px; height: 30px; border-radius: 50%; border: 1.5px solid rgba(245,238,220,.4);
+    display: flex; align-items: center; justify-content: center; font-size: 13px; color: rgba(245,238,220,.45);
+    background: rgba(10,16,28,.45); font-family: 'Kaiti SC', 'STKaiti', 'KaiTi', serif; }
+  .p-dot.on { background: var(--c); color: #fff; border-color: transparent; box-shadow: 0 0 10px color-mix(in srgb, var(--c) 70%, transparent); }
+
+  #scan-hint { position: fixed; inset: 0; z-index: 10; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; pointer-events: none; transition: opacity .35s; }
+  #scan-hint.hide { opacity: 0; }
+  .scan-frame { width: min(62vw, 300px); aspect-ratio: 2/3; position: relative; }
+  .scan-frame i { position: absolute; width: 34px; height: 34px; border-color: var(--gold); border-style: solid; opacity: .9; }
+  .scan-frame i:nth-child(1) { left: 0; top: 0; border-width: 3px 0 0 3px; border-radius: 6px 0 0 0; }
+  .scan-frame i:nth-child(2) { right: 0; top: 0; border-width: 3px 3px 0 0; border-radius: 0 6px 0 0; }
+  .scan-frame i:nth-child(3) { left: 0; bottom: 0; border-width: 0 0 3px 3px; border-radius: 0 0 0 6px; }
+  .scan-frame i:nth-child(4) { right: 0; bottom: 0; border-width: 0 3px 3px 0; border-radius: 0 0 6px 0; }
+  .scan-line { position: absolute; left: 6%; right: 6%; height: 2px; background: linear-gradient(90deg, transparent, var(--gold), transparent);
+    animation: scanmove 2.6s ease-in-out infinite; }
+  @keyframes scanmove { 0%,100% { top: 8%; } 50% { top: 90%; } }
+  .scan-txt { margin-top: 22px; font-size: 15px; letter-spacing: 3px; text-shadow: 0 1px 6px rgba(0,0,0,.8); }
+  .scan-sub { margin-top: 8px; font-size: 12px; color: var(--ivory2); letter-spacing: 1px; text-shadow: 0 1px 6px rgba(0,0,0,.8); }
+
+  #banner { position: fixed; left: 12px; right: 12px; bottom: calc(14px + env(safe-area-inset-bottom)); z-index: 20;
+    background: rgba(10,16,28,.82); backdrop-filter: blur(8px); border: 1px solid color-mix(in srgb, var(--c) 60%, transparent);
+    border-left: 5px solid var(--c); border-radius: 14px; padding: 13px 16px;
+    transform: translateY(140%); transition: transform .4s cubic-bezier(.2,.9,.3,1.2); display: flex; align-items: center; gap: 12px; }
+  #banner.show { transform: none; }
+  #banner-name { font-size: 23px; letter-spacing: 3px; }
+  #banner-sub { font-size: 11.5px; color: var(--ivory2); margin-top: 3px; letter-spacing: 1px; }
+  #banner-tap { font-size: 12px; color: var(--gold); margin-top: 5px; letter-spacing: 1px; }
+  #btn-know { margin-left: auto; flex: none; border: 1px solid var(--gold); color: var(--gold); background: transparent;
+    border-radius: 999px; padding: 8px 15px; font-size: 13px; letter-spacing: 2px; cursor: pointer; font-family: inherit; }
+
+  /* ---------- Modal ---------- */
+  .modal { position: fixed; inset: 0; z-index: 50; background: rgba(5,9,18,.78); display: none;
+    align-items: flex-end; justify-content: center; backdrop-filter: blur(4px); }
+  .modal.show { display: flex; }
+  .sheet { background: #101d36; width: 100%; max-width: 560px; max-height: 86vh; overflow-y: auto;
+    border-radius: 20px 20px 0 0; padding: 22px 22px calc(26px + env(safe-area-inset-bottom)); position: relative; }
+  .sheet-close { position: sticky; top: 0; float: right; border: none; background: rgba(245,238,220,.12);
+    color: var(--ivory); width: 34px; height: 34px; border-radius: 50%; font-size: 17px; cursor: pointer; }
+  .know-head { display: flex; gap: 14px; align-items: center; border-bottom: 2px solid; padding-bottom: 14px; }
+  .know-num { width: 46px; height: 46px; border-radius: 9px; color: #fff; display: flex; align-items: center;
+    justify-content: center; font-size: 26px; font-family: 'Kaiti SC', 'STKaiti', 'KaiTi', serif; flex: none; }
+  .know-head h3 { font-size: 24px; letter-spacing: 3px; }
+  .know-head p { font-size: 12px; color: var(--ivory2); margin-top: 4px; }
+  .know-intro { margin: 16px 0; font-size: 15px; line-height: 1.95; color: #ece4cd; text-align: justify; }
+  #know-body h4 { font-size: 15px; color: var(--gold); letter-spacing: 2px; margin-bottom: 10px; }
+  .know-craft { list-style: none; display: grid; gap: 8px; }
+  .know-craft li { background: rgba(245,238,220,.07); border-radius: 8px; padding: 9px 13px; font-size: 13.5px; letter-spacing: 1px; }
+  .know-craft li::before { content: counter(list-item, cjk-ideographic) ' · '; color: var(--gold); }
+
+  #poster-list { display: grid; gap: 16px; margin-top: 8px; }
+  #poster-list img { width: 100%; border-radius: 10px; display: block; }
+  #poster-list figcaption { text-align: center; font-size: 13px; color: var(--ivory2); margin-top: 6px; letter-spacing: 2px; }
+
+  .about h3 { font-size: 17px; color: var(--gold); letter-spacing: 2px; margin: 18px 0 8px; }
+  .about p, .about li { font-size: 13.5px; line-height: 1.9; color: #e5dcc4; }
+  .about ul { padding-left: 18px; }
+
+  /* ---------- 彩蛋 ---------- */
+  #egg { position: fixed; inset: 0; z-index: 80; background: rgba(6,10,20,.93); display: none;
+    align-items: center; justify-content: center; flex-direction: column; text-align: center; }
+  #egg.show { display: flex; }
+  #egg-confetti { position: absolute; inset: 0; pointer-events: none; }
+  .egg-title { font-size: 40px; letter-spacing: 10px; color: var(--gold); }
+  .egg-sub { margin-top: 12px; font-size: 14px; color: var(--ivory2); letter-spacing: 3px; }
+  .egg-row { display: flex; gap: 10px; margin: 28px 0; }
+  .egg-row img { width: min(19vw, 100px); border-radius: 8px; box-shadow: 0 8px 30px rgba(0,0,0,.6);
+    animation: eggpop .6s cubic-bezier(.2,1.4,.4,1) backwards; }
+  .egg-row img:nth-child(2) { animation-delay: .15s; } .egg-row img:nth-child(3) { animation-delay: .3s; }
+  .egg-row img:nth-child(4) { animation-delay: .45s; }
+  @keyframes eggpop { from { transform: scale(.3) rotate(-8deg); opacity: 0; } }
+  .egg-txt { max-width: 320px; font-size: 13px; line-height: 1.9; color: #e5dcc4; }
+  #egg-close { margin-top: 24px; padding: 11px 34px; border-radius: 999px; border: 1px solid var(--gold);
+    background: transparent; color: var(--gold); font-size: 15px; letter-spacing: 3px; cursor: pointer; font-family: inherit; }
+
+  #modal-err .sheet p { font-size: 14px; line-height: 1.9; color: #e5dcc4; }
+  #err-detail { font-size: 11px; color: #8b8570; margin-top: 10px; word-break: break-all; }
+</style>
+</head>
+<body>
+
+<!-- 落地页 -->
+<div id="landing">
+  <div class="hero">
+    <span class="hero-tag">活路儿 · 地方非遗生成式 AI 数字文创</span>
+    <h1 class="kai">非遗<em>活</em>了</h1>
+    <div class="hero-sub">AR 系列互动海报 · 铜梁龙舞 × 梁平年画 × 蜀绣 × 荣昌陶</div>
+    <div class="hero-en">HERITAGE, ALIVE! — AR POSTER SERIES</div>
+  </div>
+
+  <div class="gallery" id="gallery"></div>
+
+  <div class="cta-wrap">
+    <button id="btn-start">开始 AR 体验</button>
+    <div class="cta-note">将开启相机 · 对准任意一张《非遗活了》海报</div>
+    <div id="landing-progress"></div>
+    <div class="sec-btns">
+      <button class="btn-ghost" id="btn-posters">识别图预览</button>
+      <button class="btn-ghost" id="btn-about">作品说明</button>
+      <button class="btn-ghost" id="btn-egg-view">四艺合卷</button>
+    </div>
+  </div>
+
+  <div class="preview-row">
+    <p>—— 手边没有海报？免相机直接预览 AR 内容 ——</p>
+    <div id="preview-links"></div>
+  </div>
+
+  <div id="wx-tip">检测到微信内置浏览器：如无法开启相机，请点右上角「···」选择「在浏览器中打开」体验完整 AR。</div>
+
+  <div class="landing-foot">
+    识别图合集 · 单次扫描支持 4 张识别图无缝切换<br>
+    网页端 / 安卓 / iOS 三端兼容 · 扫码即开 · 无需下载 APP<br>
+    活路儿 · 非遗智库 出品 × 生成式人工智能辅助创作
+  </div>
+</div>
+
+<!-- AR / 预览 容器 -->
+<div id="ar-container"></div>
+
+<!-- HUD -->
+<div id="hud">
+  <div id="topbar" class="ui">
+    <button id="btn-exit">‹ 返回</button>
+    <span class="t kai">非遗活了</span>
+    <div id="progress"></div>
+  </div>
+  <div id="scan-hint">
+    <div class="scan-frame"><i></i><i></i><i></i><i></i><div class="scan-line"></div></div>
+    <div class="scan-txt">对准任意一张《非遗活了》海报</div>
+    <div class="scan-sub">铜梁龙舞 · 梁平年画 · 蜀绣 · 荣昌陶 | 丢失后可直接换扫其他海报</div>
+  </div>
+  <div id="banner" class="ui">
+    <div>
+      <div id="banner-name" class="kai"></div>
+      <div id="banner-sub"></div>
+      <div id="banner-tap"></div>
+    </div>
+    <button id="btn-know">知识卡片</button>
+  </div>
+</div>
+
+<!-- 知识卡片 -->
+<div class="modal" id="modal-know">
+  <div class="sheet"><button class="sheet-close" data-close="1">✕</button><div id="know-body"></div></div>
+</div>
+
+<!-- 识别图预览 -->
+<div class="modal" id="modal-posters">
+  <div class="sheet">
+    <button class="sheet-close" data-close="1">✕</button>
+    <div class="about"><h3 style="margin-top:0">识别图预览</h3>
+      <p>可将本页在电脑或另一台手机上打开、放大任意一张海报，再用手机扫码进入 AR 体验对准屏幕识别；也可打印张贴海报。</p>
+    </div>
+    <div id="poster-list"></div>
+  </div>
+</div>
+
+<!-- 作品说明 -->
+<div class="modal" id="modal-about">
+  <div class="sheet about">
+    <button class="sheet-close" data-close="1">✕</button>
+    <h3 style="margin-top:0">《非遗活了》· 作品说明</h3>
+    <p>海报是静态的展柜，扫一扫，非遗当场"活"过来——扫铜梁龙，巨龙破纸腾空、钢花迸溅；扫梁平年画，五版套色逐层拍印；扫蜀绣，银针引线空中绣出芙蓉；扫荣昌陶，陶坯旋转成型、窑变生辉。让非遗不止走出展柜，更走进屏幕、走回生活。</p>
+    <h3>四艺集齐</h3>
+    <p>扫齐四张海报即解锁「四艺合卷」。四个项目均为川渝国家级非物质文化遗产，与"活路儿"川渝方言中"做活路"的品牌根脉一脉相承。</p>
+    <h3>生成式 AI 工作流</h3>
+    <ul>
+      <li>AI 提取四项非遗的纹样、器型与工艺视觉基因</li>
+      <li>AI 生成海报视觉素材并完成系列化排版</li>
+      <li>AI 编写全部程序化三维建模与交互（无外部模型）</li>
+      <li>AI 优化色彩体系与三端渲染一致性</li>
+    </ul>
+    <h3>技术说明</h3>
+    <ul>
+      <li>WebAR 图像追踪 · 一个合集含 4 张识别图，单次扫描任意识别，丢失追踪无缝切换</li>
+      <li>网页端 / 安卓 / iOS 浏览器直开，无需下载 APP，全程无水印</li>
+      <li>纯程序化几何 + 实例化渲染，多设备加载与交互一致</li>
+    </ul>
+  </div>
+</div>
+
+<!-- 相机错误 -->
+<div class="modal" id="modal-err">
+  <div class="sheet">
+    <button class="sheet-close" data-close="1">✕</button>
+    <div class="about"><h3 style="margin-top:0">相机未能开启</h3>
+      <p>请检查：① 已允许本页使用相机；② 使用系统浏览器（Safari / Chrome / Edge）打开，微信中请点「···」→「在浏览器中打开」；③ 地址为 https 开头。<br>也可点击落地页下方「免相机直接预览」观看 AR 内容。</p>
+      <div id="err-detail"></div>
+    </div>
+  </div>
+</div>
+
+<!-- 彩蛋 -->
+<div id="egg">
+  <canvas id="egg-confetti"></canvas>
+  <div class="egg-title kai">四艺合卷</div>
+  <div class="egg-sub">龙 · 画 · 绣 · 陶 —— 集齐四艺，非遗活了</div>
+  <div class="egg-row">
+    <img src="posters/thumb/dragon.png" alt="龙"><img src="posters/thumb/print.png" alt="画">
+    <img src="posters/thumb/embroidery.png" alt="绣"><img src="posters/thumb/pottery.png" alt="陶">
+  </div>
+  <p class="egg-txt">一舞龙、一张画、一幅绣、一件陶，都是巴渝人手上的"活路"。<br>老手艺有了新活法，就有走向明天的新路。</p>
+  <button id="egg-close">收下这份彩蛋</button>
+</div>
+
+<script src="js/bundle.js"></script>
+</body>
+</html>
