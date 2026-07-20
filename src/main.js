@@ -125,12 +125,14 @@ async function startAR() {
   if (arStarted) return;
   const btn = $('#btn-start');
   btn.disabled = true; btn.textContent = '正在加载 AR 引擎…';
-  prewarmAR();
   showLoading();
   try {
+    // 只下载一次：等 Blob 就绪（进度条显示真实下载%），再交给 MindAR
+    setPhase('');
+    const mindSrc = await ensureMind();
     const mindarThree = new MindARThree({
       container: $('#ar-container'),
-      imageTargetSrc: 'targets/targets.mind',
+      imageTargetSrc: mindSrc,
       maxTrack: 1,
       uiLoading: 'no', uiScanning: 'no', uiError: 'no',
       filterMinCF: 0.0005, filterBeta: 0.005,
@@ -301,31 +303,43 @@ function initLanding() {
   prewarmAR();
 }
 
-// 落地页渲染后，趁用户浏览时在后台预取识别文件（约 1.6MB），
-// 把 AR 启动时最大的一笔下载与用户阅读时间重叠，点击"开始"时直接命中缓存。
+// 落地页渲染后，趁用户浏览时在后台把识别文件（约 1.6MB）下载成本地 Blob。
+// 关键：只下载这一次，AR 启动时把 Blob URL 交给 MindAR（零网络），
+// 避免"预取 + MindAR 内部再下载"在有限带宽上互相抢占、总时间翻倍。
 let prewarmed = false;
-const prewarm = { pct: 0, done: false };
-function prewarmAR() {
-  if (prewarmed) return;
-  prewarmed = true;
-  const run = async () => {
-    try {
-      const resp = await fetch('targets/targets.mind', { cache: 'force-cache' });
-      const total = Number(resp.headers.get('content-length')) || 1636308;
-      if (!resp.body) { await resp.arrayBuffer(); prewarm.pct = 1; prewarm.done = true; return; }
+const prewarm = { pct: 0, done: false, url: null, promise: null };
+function ensureMind() {
+  if (prewarm.promise) return prewarm.promise;
+  prewarm.promise = (async () => {
+    const resp = await fetch('targets/targets.mind', { cache: 'force-cache' });
+    // 注意：gzip 响应下 content-length 是压缩后大小，而流读到的是解压字节，
+    // 故用识别文件真实（解压后）字节数作为进度分母。
+    const total = 2265096;
+    if (!resp.body || !resp.body.getReader) {
+      const buf = await resp.arrayBuffer();
+      prewarm.url = URL.createObjectURL(new Blob([buf]));
+    } else {
       const reader = resp.body.getReader();
-      let loaded = 0;
+      const chunks = []; let loaded = 0;
       for (;;) {
         const { done, value } = await reader.read();
         if (done) break;
-        loaded += value.length;
+        chunks.push(value); loaded += value.length;
         prewarm.pct = Math.min(0.99, loaded / total);
         if (loadingOverlayVisible) updateLoading();
       }
-      prewarm.pct = 1; prewarm.done = true;
-      if (loadingOverlayVisible) updateLoading();
-    } catch { prewarm.done = true; }
-  };
+      prewarm.url = URL.createObjectURL(new Blob(chunks));
+    }
+    prewarm.pct = 1; prewarm.done = true;
+    if (loadingOverlayVisible) updateLoading();
+    return prewarm.url;
+  })().catch((e) => { prewarm.done = true; throw e; });
+  return prewarm.promise;
+}
+function prewarmAR() {
+  if (prewarmed) return;
+  prewarmed = true;
+  const run = () => ensureMind().catch(() => {});
   if ('requestIdleCallback' in window) requestIdleCallback(run, { timeout: 2500 });
   else setTimeout(run, 1200);
 }
