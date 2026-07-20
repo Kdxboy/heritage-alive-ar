@@ -102,6 +102,8 @@ async function startAR() {
   if (arStarted) return;
   const btn = $('#btn-start');
   btn.disabled = true; btn.textContent = '正在加载 AR 引擎…';
+  prewarmAR();
+  showLoading();
   try {
     const mindarThree = new MindARThree({
       container: $('#ar-container'),
@@ -146,6 +148,7 @@ async function startAR() {
     btn.textContent = '正在开启相机…';
     await mindarThree.start();
     arStarted = true;
+    hideLoading();
     document.body.classList.add('ar-on');
     $('#landing').classList.add('hide');
     $('#hud').classList.add('show');
@@ -166,6 +169,7 @@ async function startAR() {
     $('#btn-exit').onclick = () => location.reload();
   } catch (err) {
     console.error(err);
+    hideLoading();
     btn.disabled = false; btn.textContent = '开始 AR 体验';
     $('#err-detail').textContent = String(err && err.message || err);
     $('#modal-err').classList.add('show');
@@ -277,13 +281,48 @@ function initLanding() {
 // 落地页渲染后，趁用户浏览时在后台预取识别文件（约 1.6MB），
 // 把 AR 启动时最大的一笔下载与用户阅读时间重叠，点击"开始"时直接命中缓存。
 let prewarmed = false;
+const prewarm = { pct: 0, done: false };
 function prewarmAR() {
   if (prewarmed) return;
   prewarmed = true;
-  const run = () => fetch('targets/targets.mind', { cache: 'force-cache' })
-    .then((r) => r.arrayBuffer()).catch(() => {});
+  const run = async () => {
+    try {
+      const resp = await fetch('targets/targets.mind', { cache: 'force-cache' });
+      const total = Number(resp.headers.get('content-length')) || 1636308;
+      if (!resp.body) { await resp.arrayBuffer(); prewarm.pct = 1; prewarm.done = true; return; }
+      const reader = resp.body.getReader();
+      let loaded = 0;
+      for (;;) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        loaded += value.length;
+        prewarm.pct = Math.min(0.99, loaded / total);
+        if (loadingOverlayVisible) updateLoading();
+      }
+      prewarm.pct = 1; prewarm.done = true;
+      if (loadingOverlayVisible) updateLoading();
+    } catch { prewarm.done = true; }
+  };
   if ('requestIdleCallback' in window) requestIdleCallback(run, { timeout: 2500 });
   else setTimeout(run, 1200);
+}
+
+let loadingOverlayVisible = false;
+function showLoading() {
+  loadingOverlayVisible = true;
+  $('#ar-loading').classList.add('show');
+  updateLoading();
+}
+function hideLoading() {
+  loadingOverlayVisible = false;
+  $('#ar-loading').classList.remove('show');
+}
+function updateLoading() {
+  const pct = Math.round(prewarm.pct * 100);
+  $('#load-bar').style.width = pct + '%';
+  $('#load-pct').textContent = pct + '%';
+  $('#load-tip').textContent = prewarm.done
+    ? '识别引擎初始化中…' : '首次加载识别数据（约 1.6MB），加载后即缓存';
 }
 
 // 全局错误可视化（调试/兜底）
@@ -312,5 +351,6 @@ if (params.get('debugw')) {
   }, 1500);
 }
 const previewId = params.get('scene');
-if (previewId) startPreview(previewId);
+if (params.get('showload')) { prewarm.pct = Number(params.get('showload')) || 0.42; showLoading(); }
+else if (previewId) startPreview(previewId);
 else if (params.get('autostart')) startAR();
