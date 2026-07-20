@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>《非遗活了》设计说明</title>
+<style>
+  @page { size: A4; margin: 0; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Microsoft YaHei', sans-serif; color: #1d2434; }
+  .kai { font-family: 'KaiTi', 'STKaiti', serif; }
+  .page { width: 210mm; height: 296mm; padding: 16mm 18mm; page-break-after: always; position: relative; overflow: hidden; background: #fdfbf5; }
+  .page.dark { background: radial-gradient(120% 70% at 50% 0%, #16294a, #0d1a30 75%); color: #f5eedc; }
+
+  /* 页眉页脚 */
+  .phead { display: flex; justify-content: space-between; align-items: center; font-size: 9pt; color: #8a8672;
+    border-bottom: 1.5px solid #c2452f; padding-bottom: 6px; margin-bottom: 22px; letter-spacing: 1px; }
+  .phead b { color: #c2452f; letter-spacing: 2px; }
+  .pfoot { position: absolute; bottom: 10mm; left: 18mm; right: 18mm; display: flex; justify-content: space-between;
+    font-size: 8pt; color: #9a9683; letter-spacing: 1px; }
+
+  h2 { font-family: 'KaiTi', serif; font-size: 20pt; letter-spacing: 4px; color: #1d2434; margin-bottom: 4mm; }
+  h2::before { content: ''; display: inline-block; width: 5px; height: 18px; background: #c2452f; margin-right: 10px; border-radius: 2px; }
+  h3 { font-size: 12pt; color: #c2452f; letter-spacing: 2px; margin: 6mm 0 3mm; }
+  p, li { font-size: 10.5pt; line-height: 1.85; text-align: justify; }
+  ul, ol { padding-left: 6mm; }
+  table { width: 100%; border-collapse: collapse; font-size: 9.5pt; margin: 3mm 0; }
+  th { background: #1d2434; color: #f5eedc; padding: 2.4mm 3mm; text-align: left; letter-spacing: 1px; font-weight: normal; }
+  td { padding: 2.2mm 3mm; border-bottom: 0.5pt solid #d8d2bf; line-height: 1.6; vertical-align: top; }
+  tr:nth-child(even) td { background: #f4efe2; }
+  .tag { display: inline-block; background: #c2452f; color: #fff; border-radius: 3px; padding: 0.5mm 2.5mm; font-size: 8.5pt; margin-right: 2mm; }
+
+  /* 封面 */
+  .cover { display: flex; flex-direction: column; align-items: center; text-align: center; padding-top: 24mm; }
+  .cover .cat { border: 1px solid rgba(245,238,220,.6); border-radius: 999px; padding: 2mm 8mm; font-size: 10pt; letter-spacing: 3px; color: #cfc7ae; }
+  .cover h1 { font-family: 'KaiTi', serif; font-size: 52pt; letter-spacing: 14px; margin: 12mm 0 4mm; }
+  .cover h1 em { font-style: normal; color: #e8b34b; }
+  .cover .sub { font-size: 13pt; letter-spacing: 4px; color: #e8dfc8; }
+  .cover .en { font-size: 8.5pt; letter-spacing: 5px; color: rgba(207,199,174,.6); margin-top: 3mm; }
+  .cover .posters { display: flex; gap: 5mm; margin: 14mm 0 10mm; }
+  .cover .posters img { width: 36mm; border-radius: 2mm; box-shadow: 0 4mm 10mm rgba(0,0,0,.5); }
+  .cover .link-row { display: flex; align-items: center; gap: 6mm; background: rgba(245,238,220,.08);
+    border: 1px solid rgba(245,238,220,.25); border-radius: 4mm; padding: 5mm 8mm; }
+  .cover .link-row img { width: 26mm; height: 26mm; border-radius: 2mm; background: #fff; padding: 1.5mm; }
+  .cover .link-row .t1 { font-size: 10pt; color: #e8dfc8; letter-spacing: 2px; text-align: left; }
+  .cover .link-row .t2 { font-size: 11pt; color: #e8b34b; margin-top: 2mm; letter-spacing: 0.5px; }
+  .cover .t3 { font-size: 9pt; color: rgba(207,199,174,.75); margin-top: 2mm; letter-spacing: 1px; text-align: left; }
+
+  /* 截图网格 */
+  .shots { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 4mm; margin-top: 4mm; }
+  .shots figure { text-align: center; }
+  .shots img { width: 100%; border-radius: 2mm; border: 0.5pt solid #d8d2bf; }
+  .shots figcaption { font-size: 9pt; color: #6b6650; margin-top: 1.5mm; letter-spacing: 1px; }
+  .shot-wide { display: flex; gap: 6mm; margin-top: 5mm; align-items: flex-start; }
+  .shot-wide img { width: 62mm; border-radius: 2mm; border: 0.5pt solid #d8d2bf; }
+
+  .two-col { display: flex; gap: 8mm; }
+  .two-col > div { flex: 1; }
+  .callout { background: #f4efe2; border-left: 3px solid #e8b34b; padding: 3mm 4mm; font-size: 9.5pt; line-height: 1.8; margin: 3mm 0; }
+</style>
+</head>
+<body>
+
+<!-- P1 封面 -->
+<div class="page dark">
+  <div class="cover">
+    <div class="cat">中国好创意大赛 · 活路儿—地方非遗生成式人工智能专项赛 · 类别四：人工智能+数字文创类</div>
+    <h1>非遗<em>活</em>了</h1>
+    <div class="sub kai">活路儿 · 地方非遗 AR 系列互动海报</div>
+    <div class="en">HERITAGE, ALIVE! — AR POSTER SERIES</div>
+    <div class="posters">
+      <img src="../提交材料/识别图源文件/识别图-壹-铜梁龙舞.png">
+      <img src="../提交材料/识别图源文件/识别图-贰-梁平木版年画.png">
+      <img src="../提交材料/识别图源文件/识别图-叁-蜀绣.png">
+      <img src="../提交材料/识别图源文件/识别图-肆-荣昌陶器.png">
+    </div>
+    <div class="link-row">
+      <img src="../提交材料/作品二维码.png">
+      <div>
+        <div class="t1">扫码即开 · 无需下载 APP · 三端兼容 · 全程无水印</div>
+        <div class="t2">https://kdxboy.github.io/heritage-alive-ar/</div>
+        <div class="t3">AR 非遗数字交互文创作品 · 识别图合集（4 张）· 生成式 AI 全流程辅助创作</div>
+      </div>
+    </div>
+  </div>
+  <div class="pfoot" style="color:rgba(207,199,174,.5)"><span>《非遗活了》设计说明</span><span>01</span></div>
+</div>
+
+<!-- P2 创意概念 -->
+<div class="page">
+  <div class="phead"><span><b>非遗活了</b> · 设计说明</span><span>创意概念</span></div>
+  <h2 class="kai">一、创意概念：让非遗跳出纸面</h2>
+  <p>海报是静态的"展柜"。本作品以四张系列海报为载体，用手机一扫，非遗当场"活"过来——扫铜梁龙，巨龙破纸腾空、火龙钢花迸溅；扫梁平年画，墨线版与套色版逐层拍印，看懂"一画多版"；扫蜀绣，银针引线在空中一针一针绣出芙蓉；扫荣昌陶，陶坯在拉坯轮上旋转成型、施釉窑变。作品名即宣言：<b>让非遗不止走出展柜，更跳出纸面、走回生活</b>，直接呼应活路儿"让非遗被看见、被体验、被传播、被带回生活"的品牌理念。</p>
+  <h3>地方性锚定：一脉相承的川渝叙事</h3>
+  <p>四个项目全部为<b>川渝国家级非物质文化遗产</b>，与"活路儿"源自川渝方言"做活路"的品牌根脉严丝合缝，构成完整的"地方非遗"叙事：</p>
+  <table>
+    <tr><th style="width:14mm">编号</th><th style="width:30mm">非遗项目</th><th style="width:32mm">地域 · 级别</th><th>AR 内容与工艺叙事</th></tr>
+    <tr><td class="kai">壹《龙》</td><td>铜梁龙舞</td><td>重庆铜梁 · 国家级（2006 首批）</td><td>巨龙腾空盘旋追逐火焰龙珠，底部火龙钢花如瀑迸溅，再现"火树银花不夜天"</td></tr>
+    <tr><td class="kai">贰《画》</td><td>梁平木版年画</td><td>重庆梁平 · 国家级（2006 首批）</td><td>五块雕版依次飞临拍印，先套色后墨线，动态演示"一画多版"套色工艺</td></tr>
+    <tr><td class="kai">叁《绣》</td><td>蜀绣</td><td>川渝地区 · 国家级（2006 首批）</td><td>银针引线凌空走针，缎面上逐针绣出五瓣芙蓉，呈现针法与丝理之美</td></tr>
+    <tr><td class="kai">肆《陶》</td><td>荣昌陶器</td><td>重庆荣昌 · 国家级（2011）</td><td>红泥在拉坯轮上成型，朱砂釉自上而下挂釉滴垂，窑火中完成"窑变"</td></tr>
+  </table>
+  <h3>系列化 · 系统化：集齐机制</h3>
+  <p>四张海报共用统一品牌版式（活路儿标识、壹贰叁肆编号印章、四色分主题），并通过<b>「四艺集齐」机制</b>连为一个系统：扫齐四张海报即解锁「四艺合卷」彩蛋，进度实时显示（x/4）。四张海报从"并列的作品"变成"完整的收集之旅"，天然适配展览打卡、文旅动线与社交传播场景，也为每个非遗配备了知识卡片（简介 + 工艺四步），让体验兼具趣味与知识密度。</p>
+  <div class="callout">品牌联动：视觉系统延续活路儿"靛蓝 × 朱砂"品牌基因，四艺各配主题色（朱砂红/藤黄/松绿/赭陶），与同品牌营销策划形成完整品牌矩阵。</div>
+  <div class="pfoot"><span>《非遗活了》设计说明</span><span>02</span></div>
+</div>
+
+<!-- P3 AR 效果 -->
+<div class="page">
+  <div class="phead"><span><b>非遗活了</b> · 设计说明</span><span>AR 效果与交互</span></div>
+  <h2 class="kai">二、AR 效果与交互设计</h2>
+  <div class="shots">
+    <figure><img src="../docs/screenshots/ar-龙.png"><figcaption>壹 · 巨龙腾空 / 点击迸发钢花</figcaption></figure>
+    <figure><img src="../docs/screenshots/ar-画.png"><figcaption>贰 · 五版套色拍印 / 点击快进</figcaption></figure>
+    <figure><img src="../docs/screenshots/ar-绣.png"><figcaption>叁 · 凌空刺绣 / 点击加速</figcaption></figure>
+    <figure><img src="../docs/screenshots/ar-陶.png"><figcaption>肆 · 拉坯挂釉窑变 / 点击换器型</figcaption></figure>
+  </div>
+  <h3>交互层次</h3>
+  <ul>
+    <li><b>识别即演</b>：对准任意海报 1-2 秒内加载对应场景，动画自动开演，丢失追踪后可直接换扫其他海报，无缝切换；</li>
+    <li><b>点击互动</b>：每个场景设有专属交互（迸钢花 / 快进拍印 / 加速刺绣 / 切换器型），把"观看"变成"参与"；</li>
+    <li><b>知识卡片</b>：识别成功后一键查看该非遗的简介与"工艺四步"，AR 演的正是卡片讲的工艺；</li>
+    <li><b>收集成就</b>：顶栏实时显示"龙画绣陶"四枚印章点亮进度，集齐弹出「四艺合卷」庆祝彩蛋。</li>
+  </ul>
+  <h3>评审友好设计</h3>
+  <div class="shot-wide">
+    <img src="../docs/screenshots/落地页.png">
+    <div>
+      <p>落地页内置<b>「识别图预览」</b>：一台手机 + 一块屏幕即可完成全部评审——电脑打开作品链接放大海报，手机扫码对准屏幕即可识别，无需打印。</p>
+      <p style="margin-top:3mm">另设<b>「免相机预览」</b>入口（?scene=dragon 等四个直达链接）：无需相机权限即可查看四个 AR 场景的完整动画与交互，拖动旋转视角、点击触发交互，最大限度降低评审与传播门槛。</p>
+      <p style="margin-top:3mm">微信内置浏览器自动检测并提示"在浏览器中打开"；不支持相机/WebGL 的设备可降级浏览四艺知识卡片与识别图。</p>
+    </div>
+  </div>
+  <div class="pfoot"><span>《非遗活了》设计说明</span><span>03</span></div>
+</div>
+
+<!-- P4 技术方案 -->
+<div class="page">
+  <div class="phead"><span><b>非遗活了</b> · 设计说明</span><span>技术方案</span></div>
+  <h2 class="kai">三、技术方案与赛题要求对照</h2>
+  <p>作品采用<b>自托管开源 WebAR 技术栈（MindAR 图像追踪 + Three.js 渲染）</b>，esbuild 打包为单文件应用（1.7MB），部署于 HTTPS 静态站点。不依赖任何商业 AR 平台，从根本上保证零水印与长期可访问。</p>
+  <table>
+    <tr><th style="width:58mm">赛题硬性要求</th><th>实现方式</th></tr>
+    <tr><td>无平台、厂商、个人水印，画面无遮挡标识</td><td>自托管开源 MindAR + Three.js，非商业 SaaS 平台，全程零水印</td></tr>
+    <tr><td>合集模式，单次扫描识别不小于三张识别图</td><td>单个 targets.mind 识别文件编译 <b>4 张</b>识别图，超出要求</td></tr>
+    <tr><td>丢失追踪后无缝切换任意识别图</td><td>多锚点事件驱动（maxTrack=1），丢失后即扫即换，无需刷新</td></tr>
+    <tr><td>兼容网页端 / 安卓 / iOS，扫码即开免下载</td><td>纯 WebAR（getUserMedia + WebGL），Safari / Chrome / Edge 浏览器直开</td></tr>
+    <tr><td>多设备加载、交互稳定一致</td><td>全程序化几何建模 + 实例化渲染，无外部 3D 模型文件，总资源约 8MB</td></tr>
+    <tr><td>识别图源文件</td><td>识别版 1024×1536 / 印刷版 2048×3072 / AI 原始画面三套齐交</td></tr>
+  </table>
+  <h3>关键技术点</h3>
+  <ul>
+    <li><b>程序化三维建模</b>：龙身为 44 节实例化样条链 + 粒子钢花；年画为画布纹理逐版合成；刺绣为 500+ 针迹实例化逐针显影；陶坯为车削网格实时形变 + 釉层生长算法——零模型文件，加载快、三端一致；</li>
+    <li><b>识别图工程化</b>：海报画面高细节、高对比、非对称构图，保证特征点密度；识别图与线上编译版本像素级一致；</li>
+    <li><b>健壮性</b>：相机权限失败引导、微信环境检测、WebGL 降级方案、竖横屏自适应。</li>
+  </ul>
+  <h3>系统构成</h3>
+  <p>识别层（targets.mind 四目标合集）→ 渲染层（Three.js 四场景，事件驱动切换）→ 交互层（点击交互 + 知识卡片 + 收集进度）→ 传播层（扫码直开 + 免相机预览 + 彩蛋分享）。</p>
+  <div class="pfoot"><span>《非遗活了》设计说明</span><span>04</span></div>
+</div>
+
+<!-- P5 AI 工作流 -->
+<div class="page">
+  <div class="phead"><span><b>非遗活了</b> · 设计说明</span><span>生成式 AI 工作流</span></div>
+  <h2 class="kai">四、生成式 AI 工作流与版权说明</h2>
+  <p>本作品为<b>生成式人工智能全流程辅助创作</b>的实践样本，人与 AI 的分工明确：人负责文化判断与审美决策，AI 负责生成与实现。</p>
+  <table>
+    <tr><th style="width:40mm">环节</th><th>AI 的工作</th></tr>
+    <tr><td><span class="tag">提取</span>非遗元素</td><td>从铜梁龙舞、梁平年画、蜀绣、荣昌陶的公开工艺特征中提取龙鳞、套色版式、针法肌理、器型轮廓等视觉基因</td></tr>
+    <tr><td><span class="tag">生成</span>视觉素材</td><td>四张海报主画面由 AI 文生图原创生成（同系列风格链式引导），无任何第三方素材</td></tr>
+    <tr><td><span class="tag">重构</span>系列排版</td><td>AI 编写程序化排版系统：统一品牌框架 + 四色主题 + 编号印章，一键输出识别版/印刷版/缩略图</td></tr>
+    <tr><td><span class="tag">建模</span>三维场景</td><td>四个 AR 场景全部为 AI 编写的程序化参数建模与动画（样条龙身、套版拍印、针迹生成、车削成型）</td></tr>
+    <tr><td><span class="tag">优化</span>色彩与体验</td><td>主题色板统一校验，三端渲染一致性调优，交互与降级方案设计</td></tr>
+  </table>
+  <h3>版权说明</h3>
+  <p>海报画面为 AI 原创生成，AR 场景为原创程序化建模，代码基于开源协议（MindAR/Three.js 均为 MIT License）自托管使用，<b>无第三方素材版权风险</b>，符合大赛版权保护与存证理念。</p>
+  <h3>作品信息</h3>
+  <table>
+    <tr><td style="width:40mm">作品名称</td><td>《非遗活了》—— 活路儿地方非遗 AR 系列互动海报</td></tr>
+    <tr><td>参赛类别</td><td>类别四：人工智能 + 数字文创类（AR 非遗数字交互文创作品）</td></tr>
+    <tr><td>作品形式</td><td>AR 非遗互动海报合集（4 张识别图 + 4 个 AR 交互场景 + 集齐彩蛋）</td></tr>
+    <tr><td>公开访问链接</td><td>https://kdxboy.github.io/heritage-alive-ar/</td></tr>
+    <tr><td>体验方式</td><td>手机浏览器扫码 → 开始 AR 体验 → 对准任意一张系列海报</td></tr>
+  </table>
+  <div class="callout kai" style="text-align:center; font-size:12pt; letter-spacing:2px; margin-top:8mm">一舞龙、一张画、一幅绣、一件陶，都是巴渝人手上的"活路"。<br>老手艺有了新活法，就有走向明天的新路。</div>
+  <div class="pfoot"><span>《非遗活了》设计说明</span><span>05</span></div>
+</div>
+
+</body>
+</html>
