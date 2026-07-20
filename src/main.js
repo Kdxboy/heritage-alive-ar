@@ -16,6 +16,29 @@ MindARThree.prototype.resize = function () {
   if (!this.controller || !this.video) return;
   _origResize.call(this);
 };
+
+// 性能：MindAR 默认以 `video:{}` 请求相机（手机常给 1080p/4K），
+// tfjs 会拿整帧做预热与逐帧追踪，极慢。这里注入 720p 约束，
+// 大幅缩短预热(dummyRun)与每帧处理时间，对识别精度影响可忽略。
+if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+  const _gum = navigator.mediaDevices.getUserMedia.bind(navigator.mediaDevices);
+  navigator.mediaDevices.getUserMedia = (c) => {
+    if (c && c.video && typeof c.video === 'object') {
+      if (c.video.width == null) c.video.width = { ideal: 1280 };
+      if (c.video.height == null) c.video.height = { ideal: 720 };
+      if (c.video.frameRate == null) c.video.frameRate = { ideal: 30 };
+    }
+    return _gum(c);
+  };
+}
+
+// 阶段提示：MindAR 内部 start() 依次跑 开相机→建controller+解析.mind→预热。
+// 挂钩这两个原型方法，把进度阶段实时反馈到加载遮罩。
+const _sv = MindARThree.prototype._startVideo;
+MindARThree.prototype._startVideo = function () { setPhase('正在开启相机…'); return _sv.apply(this, arguments); };
+const _sar = MindARThree.prototype._startAR;
+MindARThree.prototype._startAR = function () { setPhase('识别引擎预热中（首次较慢，之后秒开）…', true); return _sar.apply(this, arguments); };
+
 const $ = (s) => document.querySelector(s);
 const LS_KEY = 'heritage-alive-collected';
 
@@ -308,21 +331,43 @@ function prewarmAR() {
 }
 
 let loadingOverlayVisible = false;
+let loadStart = 0, loadTimer = null, phaseText = '', phaseIndet = false;
 function showLoading() {
   loadingOverlayVisible = true;
+  loadStart = performance.now();
+  phaseText = ''; phaseIndet = false;
   $('#ar-loading').classList.add('show');
   updateLoading();
+  clearInterval(loadTimer);
+  loadTimer = setInterval(() => { if (loadingOverlayVisible) updateLoading(); }, 250);
 }
 function hideLoading() {
   loadingOverlayVisible = false;
+  clearInterval(loadTimer);
   $('#ar-loading').classList.remove('show');
 }
+function setPhase(text, indet) {
+  phaseText = text;
+  phaseIndet = !!indet;
+  if (loadingOverlayVisible) updateLoading();
+}
 function updateLoading() {
-  const pct = Math.round(prewarm.pct * 100);
-  $('#load-bar').style.width = pct + '%';
-  $('#load-pct').textContent = pct + '%';
-  $('#load-tip').textContent = prewarm.done
-    ? '识别引擎初始化中…' : '首次加载识别数据（约 1.6MB），加载后即缓存';
+  const bar = $('#load-bar');
+  const downloading = !prewarm.done && !phaseText;
+  if (downloading) {
+    const pct = Math.round(prewarm.pct * 100);
+    bar.classList.remove('indet');
+    bar.style.width = pct + '%';
+    $('#load-pct').textContent = pct + '%';
+    $('#load-tip').textContent = '首次加载识别数据（约 1.6MB），加载后永久缓存';
+  } else {
+    // 进入相机/预热阶段：不确定进度，用动画条 + 计时
+    if (phaseIndet || phaseText) { bar.classList.add('indet'); bar.style.width = '100%'; }
+    $('#load-pct').textContent = '';
+    $('#load-tip').textContent = phaseText || '识别引擎初始化中…';
+  }
+  const sec = ((performance.now() - loadStart) / 1000).toFixed(0);
+  $('#load-elapsed').textContent = sec > 1 ? `已用 ${sec}s` : '';
 }
 
 // 全局错误可视化（调试/兜底）
