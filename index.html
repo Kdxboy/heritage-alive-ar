@@ -164,7 +164,10 @@
   #load-tip { margin-top: 10px; font-size: 12.5px; color: var(--ivory2); letter-spacing: 1px; text-align: center; line-height: 1.7; }
   .load-track { margin-top: 18px; width: min(76vw, 320px); height: 6px; background: rgba(245,238,220,.15); border-radius: 999px; overflow: hidden; }
   #load-bar { height: 100%; width: 0; background: linear-gradient(90deg, var(--cinnabar), var(--gold)); border-radius: 999px; transition: width .25s; }
+  #load-bar.indet { width: 40% !important; transition: none; animation: indet 1.2s ease-in-out infinite; }
+  @keyframes indet { 0% { margin-left: -40%; } 100% { margin-left: 100%; } }
   #load-pct { margin-top: 8px; font-size: 12px; color: var(--gold); letter-spacing: 1px; }
+  #load-elapsed { margin-top: 4px; font-size: 11px; color: rgba(207,199,174,.55); letter-spacing: 1px; }
 </style>
 </head>
 <body>
@@ -288,6 +291,7 @@
   <div id="load-tip"></div>
   <div class="load-track"><div id="load-bar"></div></div>
   <div id="load-pct">0%</div>
+  <div id="load-elapsed"></div>
 </div>
 
 <!-- 彩蛋 -->
