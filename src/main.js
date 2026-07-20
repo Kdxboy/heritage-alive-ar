@@ -205,7 +205,7 @@ function startPreview(id) {
   const world = new THREE.Group();
   scene.add(world);
   // 虚拟海报面
-  new THREE.TextureLoader().load(`posters/${id}.png`, (tex) => {
+  new THREE.TextureLoader().load(`posters/${id}.jpg`, (tex) => {
     tex.colorSpace = THREE.SRGBColorSpace;
     const plane = new THREE.Mesh(
       new THREE.PlaneGeometry(1, 1.5),
@@ -253,7 +253,7 @@ function startPreview(id) {
 function initLanding() {
   $('#gallery').innerHTML = HERITAGE.map((h, i) => `
     <div class="g-card" data-i="${i}" style="--c:${h.color}">
-      <img src="posters/thumb/${h.id}.png" alt="${h.name}" loading="lazy">
+      <img src="posters/thumb/${h.id}.jpg" alt="${h.name}" loading="lazy">
       <div class="g-name">${h.num} · ${h.name}</div>
     </div>`).join('');
   $('#gallery').addEventListener('click', (e) => {
@@ -263,7 +263,7 @@ function initLanding() {
   $('#preview-links').innerHTML = HERITAGE.map((h) =>
     `<a class="chip" href="?scene=${h.id}" style="--c:${h.color}">${h.name}</a>`).join('');
   $('#poster-list').innerHTML = HERITAGE.map((h) => `
-    <figure><img src="posters/${h.id}.png" alt="${h.name}" loading="lazy"><figcaption>${h.num} · ${h.name}</figcaption></figure>`).join('');
+    <figure><img src="posters/${h.id}.jpg" alt="${h.name}" loading="lazy"><figcaption>${h.num} · ${h.name}</figcaption></figure>`).join('');
   $('#btn-start').onclick = startAR;
   $('#btn-posters').onclick = () => $('#modal-posters').classList.add('show');
   $('#btn-about').onclick = () => $('#modal-about').classList.add('show');
@@ -271,6 +271,19 @@ function initLanding() {
   renderProgress();
   const isWeixin = /MicroMessenger/i.test(navigator.userAgent);
   if (isWeixin) $('#wx-tip').style.display = 'block';
+  prewarmAR();
+}
+
+// 落地页渲染后，趁用户浏览时在后台预取识别文件（约 1.6MB），
+// 把 AR 启动时最大的一笔下载与用户阅读时间重叠，点击"开始"时直接命中缓存。
+let prewarmed = false;
+function prewarmAR() {
+  if (prewarmed) return;
+  prewarmed = true;
+  const run = () => fetch('targets/targets.mind', { cache: 'force-cache' })
+    .then((r) => r.arrayBuffer()).catch(() => {});
+  if ('requestIdleCallback' in window) requestIdleCallback(run, { timeout: 2500 });
+  else setTimeout(run, 1200);
 }
 
 // 全局错误可视化（调试/兜底）

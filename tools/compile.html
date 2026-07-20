@@ -11,13 +11,16 @@ try {
   await import('/node_modules/mind-ar/dist/mindar-image.prod.js');
   const { Compiler } = window.MINDAR.IMAGE;
   const ids = ['dragon', 'print', 'embroidery', 'pottery'];
+  const qs = new URLSearchParams(location.search);
+  const H = Number(qs.get('h') || 1024);
+  const OUT = qs.get('out') || 'site/targets/targets.mind';
 
-  // 下采样到高 1024，加速编译且不影响追踪坐标系
+  // 下采样到指定高度：控制特征点密度与文件体积
   async function loadScaled(id) {
     const img = new Image();
     img.src = '/site/posters/' + id + '.png';
     await img.decode();
-    const scale = Math.min(1, 1024 / img.height);
+    const scale = Math.min(1, H / img.height);
     const c = document.createElement('canvas');
     c.width = Math.round(img.width * scale);
     c.height = Math.round(img.height * scale);
@@ -40,7 +43,7 @@ try {
   });
   log(`compiled in ${((performance.now() - t0) / 1000).toFixed(1)}s`);
   const buffer = await compiler.exportData();
-  await fetch('/__save?path=' + encodeURIComponent('site/targets/targets.mind'), { method: 'POST', body: buffer });
+  await fetch('/__save?path=' + encodeURIComponent(OUT), { method: 'POST', body: buffer });
   log('SAVED');
   document.title = 'DONE';
 } catch (e) {

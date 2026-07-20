@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html><head><meta charset="UTF-8"></head><body>
+<script type="module">
+const log = (m) => fetch('/__log', { method: 'POST', body: String(m) }).catch(() => {});
+async function enc(src, outPath, quality) {
+  const img = new Image();
+  img.src = src; await img.decode();
+  const c = document.createElement('canvas');
+  c.width = img.naturalWidth; c.height = img.naturalHeight;
+  const ctx = c.getContext('2d');
+  ctx.fillStyle = '#0d1a30'; ctx.fillRect(0, 0, c.width, c.height); // JPEG 无透明，补底色
+  ctx.drawImage(img, 0, 0);
+  const blob = await new Promise((r) => c.toBlob(r, 'image/jpeg', quality));
+  const buf = await blob.arrayBuffer();
+  await fetch('/__save?path=' + encodeURIComponent(outPath), { method: 'POST', body: buf });
+  log(`${outPath} ${c.width}x${c.height} ${(buf.byteLength / 1024).toFixed(0)}KB`);
+}
+try {
+  const ids = ['dragon', 'print', 'embroidery', 'pottery'];
+  for (const id of ids) {
+    await enc('/site/posters/' + id + '.png', 'site/posters/' + id + '.jpg', 0.86);
+    await enc('/site/posters/thumb/' + id + '.png', 'site/posters/thumb/' + id + '.jpg', 0.82);
+  }
+  log('DONE-JPG');
+  document.title = 'DONE';
+} catch (e) { log('FATAL ' + (e && e.stack || e)); }
+</script>
+</body></html>

@@ -7,7 +7,9 @@ import { fileURLToPath } from 'node:url';
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const EDGE = 'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe';
 const PORT = 8177;
-const out = path.join(root, 'site', 'targets', 'targets.mind');
+const H = process.argv[2] || '1024';
+const OUT_REL = process.argv[3] || 'site/targets/targets.mind';
+const out = path.join(root, ...OUT_REL.split('/'));
 if (existsSync(out)) rmSync(out);
 
 const server = spawn(process.execPath, [path.join(root, 'tools', 'serve.mjs'), String(PORT)], { stdio: ['ignore', 'pipe', 'pipe'] });
@@ -20,7 +22,7 @@ const edge = spawn(EDGE, [
   '--headless=new', '--no-first-run', '--mute-audio',
   `--user-data-dir=${profile}`,
   '--window-size=1200,900',
-  `http://localhost:${PORT}/tools/compile.html`,
+  `http://localhost:${PORT}/tools/compile.html?h=${H}&out=${encodeURIComponent(OUT_REL)}`,
 ], { stdio: 'ignore' });
 
 const deadline = Date.now() + 9 * 60 * 1000;
